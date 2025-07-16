@@ -30,6 +30,7 @@ model/ # Data classes (Employee, Attendance)
 dao/ # DAO interfaces
 
 database/ # Room Database setup
+![image alt](WhatsApp Image 2025-07-16 at 09.38.17.jpeg)
 
 ui/Activities # All activities
 
