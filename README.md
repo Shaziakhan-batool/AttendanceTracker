@@ -23,19 +23,4 @@ An Android application to manage employee attendance efficiently. Built using **
 - **CSV Export**: FileWriter
 - **Image Loading**: Glide
 
-## 📁 Folder Structure
-
-model/ # Data classes (Employee, Attendance)
-
-dao/ # DAO interfaces
-
-database/ # Room Database setup
 ![image alt](WhatsApp Image 2025-07-16 at 09.38.17.jpeg)
-
-ui/Activities # All activities
-
-ui/Adapters # RecyclerView adapters
-
-ui/Viewmodels # ViewModel classes
-
-utils/ # Utility functions
