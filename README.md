@@ -23,4 +23,4 @@ An Android application to manage employee attendance efficiently. Built using **
 - **CSV Export**: FileWriter
 - **Image Loading**: Glide
 
-![image alt](WhatsApp Image 2025-07-16 at 09.38.17.jpeg)
+
