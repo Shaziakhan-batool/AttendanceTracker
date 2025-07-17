@@ -2,10 +2,12 @@ package com.example.attendancetracker.ui.Activities
 
 import android.Manifest
 import android.app.DatePickerDialog
+import android.content.ContentValues
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
+import android.provider.MediaStore
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -116,17 +118,46 @@ class ViewAttendanceActivity : AppCompatActivity() {
             csvBody.appendLine("$name,$empId,$date,$status")
         }
 
+        val fileName = "Attendance_Report_${System.currentTimeMillis()}.csv"
+
         try {
-            val fileName = "Attendance_Report_${System.currentTimeMillis()}.csv"
-            val downloadsDir = getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
-            val file = File(downloadsDir, fileName)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                // ✅ Use MediaStore for Android 10+
+                val resolver = contentResolver
+                val contentValues = ContentValues().apply {
+                    put(MediaStore.Downloads.DISPLAY_NAME, fileName)
+                    put(MediaStore.Downloads.MIME_TYPE, "text/csv")
+                    put(MediaStore.Downloads.IS_PENDING, 1)
+                }
 
-            val writer = FileWriter(file)
-            writer.write(csvBody.toString())
-            writer.flush()
-            writer.close()
+                val collection = MediaStore.Downloads.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
+                val fileUri = resolver.insert(collection, contentValues)
 
-            Toast.makeText(this, "CSV exported to ${file.absolutePath}", Toast.LENGTH_LONG).show()
+                fileUri?.let { uri ->
+                    resolver.openOutputStream(uri)?.use { outputStream ->
+                        outputStream.write(csvBody.toString().toByteArray())
+                        outputStream.flush()
+                    }
+
+                    contentValues.clear()
+                    contentValues.put(MediaStore.Downloads.IS_PENDING, 0)
+                    resolver.update(uri, contentValues, null, null)
+
+                    Toast.makeText(this, "CSV exported to Downloads", Toast.LENGTH_LONG).show()
+                } ?: run {
+                    Toast.makeText(this, "Failed to create file", Toast.LENGTH_LONG).show()
+                }
+            } else {
+                // ✅ Legacy method for Android < 10
+                val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                val file = File(downloadsDir, fileName)
+                val writer = FileWriter(file)
+                writer.write(csvBody.toString())
+                writer.flush()
+                writer.close()
+
+                Toast.makeText(this, "CSV exported to ${file.absolutePath}", Toast.LENGTH_LONG).show()
+            }
         } catch (e: Exception) {
             e.printStackTrace()
             Toast.makeText(this, "Export failed: ${e.message}", Toast.LENGTH_LONG).show()
